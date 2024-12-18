@@ -77,7 +77,7 @@ def create_cors_middleware(allowed_origin: str):
 
         response.headers['Access-Control-Allow-Origin'] = allowed_origin
         response.headers['Access-Control-Allow-Methods'] = 'POST, GET, DELETE, PUT, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
         response.headers['Access-Control-Allow-Credentials'] = 'true'
         return response
 
@@ -377,6 +377,42 @@ class PromptServer():
                         original_pil.save(filepath, compress_level=4, pnginfo=metadata)
 
             return image_upload(post, image_save_function)
+
+        @routes.get("/output/image")
+        async def get_output_image(request):
+            if "filename" in request.rel_url.query:
+                filename = request.rel_url.query["filename"]
+                filename, output_dir = folder_paths.annotated_filepath(filename)
+
+                # validation for security: prevent accessing arbitrary path
+                if filename[0] == '/' or '..' in filename:
+                    return web.Response(status=400)
+
+                if output_dir is None:
+                    type = request.rel_url.query.get("type", "output")
+                    output_dir = folder_paths.get_directory_by_type(type)
+
+                if output_dir is None:
+                    return web.Response(status=400)
+
+                if "subfolder" in request.rel_url.query:
+                    full_output_dir = os.path.join(output_dir, request.rel_url.query["subfolder"])
+                    if os.path.commonpath((os.path.abspath(full_output_dir), output_dir)) != output_dir:
+                        return web.Response(status=403)
+                    output_dir = full_output_dir
+
+                filename = os.path.basename(filename)
+                file = os.path.join(output_dir, filename)
+
+                print("/output/image, get file: ", file)
+                if os.path.isfile(file):
+                    with open(file, 'rb') as f:
+                        image_data = f.read()
+                        return web.Response(body=image_data,
+                                                content_type=f'image/png',
+                                                headers={"Content-Disposition": f"filename=\"{filename}\""})
+
+            return web.Response(status=404)
 
         @routes.get("/view")
         async def view_image(request):
