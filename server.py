@@ -220,6 +220,54 @@ class PromptServer():
             response.headers["Expires"] = "0"
             return response
 
+        @routes.get("/app")
+        async def get_root(request):
+            response = web.FileResponse(os.path.join(self.web_root, "index.html"))
+            response.headers['Cache-Control'] = 'no-cache'
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+            return response
+
+        @routes.get("/app/")
+        async def get_root(request):
+            response = web.FileResponse(os.path.join(self.web_root, "index.html"))
+            response.headers['Cache-Control'] = 'no-cache'
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+            return response
+
+        @routes.get("/app/history")
+        async def get_root(request):
+            response = web.FileResponse(os.path.join(self.web_root, "history.html"))
+            response.headers['Cache-Control'] = 'no-cache'
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+            return response
+
+        @routes.get("/app/price")
+        async def get_root(request):
+            response = web.FileResponse(os.path.join(self.web_root, "price.html"))
+            response.headers['Cache-Control'] = 'no-cache'
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+            return response
+
+        @routes.get("/app/reference")
+        async def get_root(request):
+            response = web.FileResponse(os.path.join(self.web_root, "reference.html"))
+            response.headers['Cache-Control'] = 'no-cache'
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+            return response
+
+        @routes.get("/app/replace")
+        async def get_root(request):
+            response = web.FileResponse(os.path.join(self.web_root, "replace.html"))
+            response.headers['Cache-Control'] = 'no-cache'
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+            return response
+
         @routes.get("/embeddings")
         def get_embeddings(self):
             embeddings = folder_paths.get_filename_list("embeddings")
@@ -747,6 +795,9 @@ class PromptServer():
         for route in self.routes:
             # Custom nodes might add extra static routes. Only process non-static
             # routes to add /api prefix.
+            if route.path.startswith('/app'):
+                print("不为此路由添加api/路由: ", route.path)
+                continue
             if isinstance(route, web.RouteDef):
                 api_routes.route(route.method, "/api" + route.path)(route.handler, **route.kwargs)
         self.app.add_routes(api_routes)
@@ -756,8 +807,10 @@ class PromptServer():
         for name, dir in nodes.EXTENSION_WEB_DIRS.items():
             self.app.add_routes([web.static('/extensions/' + name, dir)])
 
+        print("web root is: ", self.web_root)
         self.app.add_routes([
             web.static('/', self.web_root),
+            web.static('/app', self.web_root),
         ])
 
     def get_queue_info(self):
