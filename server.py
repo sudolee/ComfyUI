@@ -272,6 +272,38 @@ class PromptServer():
             response.headers["Expires"] = "0"
             return response
 
+        @routes.get("/app/replacebg")
+        async def get_root(request):
+            response = web.FileResponse(os.path.join(self.web_root, "replacebg.html"))
+            response.headers['Cache-Control'] = 'no-cache'
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+            return response
+
+        @routes.get("/app/removebg")
+        async def get_root(request):
+            response = web.FileResponse(os.path.join(self.web_root, "removebg.html"))
+            response.headers['Cache-Control'] = 'no-cache'
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+            return response
+
+        @routes.get("/app/upscale")
+        async def get_root(request):
+            response = web.FileResponse(os.path.join(self.web_root, "upscale.html"))
+            response.headers['Cache-Control'] = 'no-cache'
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+            return response
+
+        @routes.get("/app/styles")
+        async def get_root(request):
+            response = web.FileResponse(os.path.join(self.web_root, "styles.html"))
+            response.headers['Cache-Control'] = 'no-cache'
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+            return response
+
         @routes.get("/embeddings")
         def get_embeddings(self):
             embeddings = folder_paths.get_filename_list("embeddings")
